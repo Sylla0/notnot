@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NotNot - Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="options-container">
+    <!-- Header -->
+    <header class="options-header">
+      <div class="header-content">
+        <div class="logo-section">
+          <img src="../assets/icons/icon48.png" alt="NotNot" class="logo">
+          <h1>NotNot Settings</h1>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="options-main">
+      <!-- General Settings -->
+      <section class="settings-section">
+        <h2>General Settings</h2>
+        
+        <div class="setting-group">
+          <label class="setting-label">
+            <input type="checkbox" id="auto-save" checked>
+            <div>
+              <strong>Auto-save notes</strong>
+              <p>Automatically save notes while typing</p>
+            </div>
+          </label>
+        </div>
+
+        <div class="setting-group">
+          <label class="setting-label">
+            <input type="checkbox" id="show-overlay" checked>
+            <div>
+              <strong>Show video overlay controls</strong>
+              <p>Display NotNot controls on supported video players</p>
+            </div>
+          </label>
+        </div>
+
+        <div class="setting-group">
+          <label class="setting-label">
+            <input type="checkbox" id="auto-detect" checked>
+            <div>
+              <strong>Auto-detect videos</strong>
+              <p>Automatically detect videos on supported platforms</p>
+            </div>
+          </label>
+        </div>
+      </section>
+
+      <!-- Capture Settings -->
+      <section class="settings-section">
+        <h2>Capture Settings</h2>
+        
+        <div class="setting-group">
+          <label for="capture-quality">
+            <strong>Screenshot quality</strong>
+            <p>Higher quality means larger file sizes</p>
+          </label>
+          <select id="capture-quality" class="setting-select">
+            <option value="0.7">Low (70%)</option>
+            <option value="0.85">Medium (85%)</option>
+            <option value="0.92" selected>High (92%)</option>
+            <option value="1">Maximum (100%)</option>
+          </select>
+        </div>
+
+        <div class="setting-group">
+          <label for="capture-format">
+            <strong>Screenshot format</strong>
+          </label>
+          <select id="capture-format" class="setting-select">
+            <option value="jpeg" selected>JPEG</option>
+            <option value="png">PNG</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- Transcription Settings -->
+      <section class="settings-section">
+        <h2>Transcription Settings</h2>
+        
+        <div class="setting-group">
+          <label for="transcription-language">
+            <strong>Transcription language</strong>
+            <p>Primary language for speech recognition</p>
+          </label>
+          <select id="transcription-language" class="setting-select">
+            <option value="en-US" selected>English (US)</option>
+            <option value="en-GB">English (UK)</option>
+            <option value="es-ES">Spanish</option>
+            <option value="fr-FR">French</option>
+            <option value="de-DE">German</option>
+            <option value="ja-JP">Japanese</option>
+            <option value="ko-KR">Korean</option>
+            <option value="zh-CN">Chinese (Simplified)</option>
+          </select>
+        </div>
+
+        <div class="setting-group">
+          <label class="setting-label">
+            <input type="checkbox" id="continuous-transcription" checked>
+            <div>
+              <strong>Continuous transcription</strong>
+              <p>Keep transcribing even during silence</p>
+            </div>
+          </label>
+        </div>
+      </section>
+
+      <!-- Export Settings -->
+      <section class="settings-section">
+        <h2>Export Settings</h2>
+        
+        <div class="setting-group">
+          <label for="export-format">
+            <strong>Default export format</strong>
+          </label>
+          <select id="export-format" class="setting-select">
+            <option value="markdown" selected>Markdown (.md)</option>
+            <option value="html">HTML (.html)</option>
+            <option value="pdf">PDF (.pdf)</option>
+          </select>
+        </div>
+
+        <div class="setting-group">
+          <label class="setting-label">
+            <input type="checkbox" id="include-timestamps" checked>
+            <div>
+              <strong>Include timestamps in exports</strong>
+              <p>Add video timestamps to exported notes</p>
+            </div>
+          </label>
+        </div>
+      </section>
+
+      <!-- Data Management -->
+      <section class="settings-section">
+        <h2>Data Management</h2>
+        
+        <div class="setting-group">
+          <button class="btn-secondary" id="export-data">Export All Data</button>
+          <p class="setting-description">Download all your notes and settings as a backup</p>
+        </div>
+
+        <div class="setting-group">
+          <button class="btn-danger" id="clear-data">Clear All Data</button>
+          <p class="setting-description">Delete all notes and reset settings (cannot be undone)</p>
+        </div>
+      </section>
+
+      <!-- About -->
+      <section class="settings-section">
+        <h2>About NotNot</h2>
+        <p>Version 1.0.0</p>
+        <p>NotNot is a video learning assistant that helps you capture, annotate, and organize your learning notes.</p>
+        <p class="links">
+          <a href="https://github.com/yourusername/notnot" target="_blank">GitHub</a> • 
+          <a href="#" id="report-issue">Report an Issue</a>
+        </p>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="options-footer">
+      <button class="btn-primary" id="save-settings">Save Settings</button>
+      <span class="save-status" id="save-status"></span>
+    </footer>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

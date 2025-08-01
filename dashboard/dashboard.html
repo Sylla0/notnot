@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NotNot - All Notes</title>
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Header -->
+    <header class="dashboard-header">
+      <div class="header-content">
+        <div class="logo-section">
+          <img src="../assets/icons/icon48.png" alt="NotNot" class="logo">
+          <h1>NotNot Notes</h1>
+        </div>
+        <div class="header-actions">
+          <input type="search" placeholder="Search notes..." class="search-input" id="search-input">
+          <button class="btn-primary" id="export-all">Export All</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+      <!-- Sidebar -->
+      <aside class="dashboard-sidebar">
+        <h3>Filter by Platform</h3>
+        <div class="filter-options">
+          <label class="filter-option">
+            <input type="checkbox" checked data-platform="all">
+            <span>All Platforms</span>
+          </label>
+          <label class="filter-option">
+            <input type="checkbox" data-platform="youtube">
+            <span>YouTube</span>
+          </label>
+          <label class="filter-option">
+            <input type="checkbox" data-platform="vimeo">
+            <span>Vimeo</span>
+          </label>
+          <label class="filter-option">
+            <input type="checkbox" data-platform="coursera">
+            <span>Coursera</span>
+          </label>
+          <label class="filter-option">
+            <input type="checkbox" data-platform="udemy">
+            <span>Udemy</span>
+          </label>
+        </div>
+
+        <h3>Sort by</h3>
+        <select class="sort-select" id="sort-select">
+          <option value="recent">Most Recent</option>
+          <option value="oldest">Oldest First</option>
+          <option value="title">Title (A-Z)</option>
+        </select>
+      </aside>
+
+      <!-- Notes Grid -->
+      <section class="notes-section">
+        <div class="notes-header">
+          <h2>Your Notes</h2>
+          <span class="notes-count" id="notes-count">0 notes</span>
+        </div>
+        
+        <div class="notes-grid" id="notes-grid">
+          <!-- Notes will be populated here -->
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="empty-state" style="display: none;">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+          <h3>No notes yet</h3>
+          <p>Start watching videos and taking notes to see them here</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

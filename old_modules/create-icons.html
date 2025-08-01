@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create NotNot Icons</title>
+</head>
+<body>
+    <h1>NotNot Icon Generator</h1>
+    <p>Open this file in a browser, then right-click each icon and save as PNG</p>
+    
+    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+        <!-- 16x16 -->
+        <div>
+            <h3>icon16.png</h3>
+            <canvas id="icon16" width="16" height="16"></canvas>
+        </div>
+        
+        <!-- 32x32 -->
+        <div>
+            <h3>icon32.png</h3>
+            <canvas id="icon32" width="32" height="32"></canvas>
+        </div>
+        
+        <!-- 48x48 -->
+        <div>
+            <h3>icon48.png</h3>
+            <canvas id="icon48" width="48" height="48"></canvas>
+        </div>
+        
+        <!-- 128x128 -->
+        <div>
+            <h3>icon128.png</h3>
+            <canvas id="icon128" width="128" height="128"></canvas>
+        </div>
+    </div>
+
+    <script>
+        function createIcon(canvasId, size) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            // Background - Tailwind blue-500
+            ctx.fillStyle = '#3B82F6';
+            ctx.fillRect(0, 0, size, size);
+            
+            // White circle in center
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size/3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Blue "N" in center
+            ctx.fillStyle = '#3B82F6';
+            ctx.font = `bold ${size/2}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('N', size/2, size/2);
+        }
+        
+        // Create all icons
+        createIcon('icon16', 16);
+        createIcon('icon32', 32);
+        createIcon('icon48', 48);
+        createIcon('icon128', 128);
+        
+        // Auto-download function
+        function downloadCanvas(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+        
+        // Add download buttons
+        document.querySelectorAll('canvas').forEach(canvas => {
+            const button = document.createElement('button');
+            button.textContent = 'Download';
+            button.onclick = () => downloadCanvas(canvas.id, canvas.id + '.png');
+            canvas.parentElement.appendChild(button);
+        });
+    </script>
+</body>
+</html>
