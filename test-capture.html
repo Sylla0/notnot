@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NotNot Capture Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        #captureResult {
+            max-width: 100%;
+            margin-top: 20px;
+            border: 2px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>NotNot YouTube Capture Test</h1>
+    
+    <div class="test-section">
+        <h2>Instructions:</h2>
+        <ol>
+            <li>Open this file in Chrome with NotNot extension loaded</li>
+            <li>Navigate to a YouTube video in another tab</li>
+            <li>Come back to this tab and run the tests</li>
+        </ol>
+    </div>
+    
+    <div class="test-section">
+        <h2>Direct Canvas Capture Test</h2>
+        <button onclick="testDirectCapture()">Test Direct Capture</button>
+        <button onclick="testCORS()">Test CORS Status</button>
+        <button onclick="testVideoAttributes()">Check Video Attributes</button>
+    </div>
+    
+    <div id="output"></div>
+    <img id="captureResult" style="display:none;" />
+    
+    <script>
+        function log(message) {
+            const output = document.getElementById('output');
+            output.textContent += message + '\n';
+            console.log(message);
+        }
+        
+        async function testDirectCapture() {
+            log('Starting direct capture test...');
+            
+            // Get YouTube tab
+            const tabs = await chrome.tabs.query({url: '*://*.youtube.com/watch*'});
+            if (tabs.length === 0) {
+                log('ERROR: No YouTube video tab found');
+                return;
+            }
+            
+            const tabId = tabs[0].id;
+            log(`Found YouTube tab: ${tabs[0].title}`);
+            
+            // Inject test script
+            try {
+                const results = await chrome.scripting.executeScript({
+                    target: { tabId: tabId },
+                    func: function() {
+                        const video = document.querySelector('video');
+                        if (!video) return { error: 'No video element found' };
+                        
+                        const result = {
+                            videoFound: true,
+                            width: video.videoWidth,
+                            height: video.videoHeight,
+                            currentTime: video.currentTime,
+                            paused: video.paused,
+                            readyState: video.readyState,
+                            crossOrigin: video.crossOrigin,
+                            src: video.src
+                        };
+                        
+                        try {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = video.videoWidth;
+                            canvas.height = video.videoHeight;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(video, 0, 0);
+                            const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+                            result.captureSuccess = true;
+                            result.imageDataLength = dataUrl.length;
+                            result.imageData = dataUrl;
+                        } catch (e) {
+                            result.captureSuccess = false;
+                            result.captureError = e.toString();
+                        }
+                        
+                        return result;
+                    }
+                });
+                
+                const result = results[0].result;
+                log('Test results:');
+                log(`- Video found: ${result.videoFound}`);
+                log(`- Dimensions: ${result.width}x${result.height}`);
+                log(`- Current time: ${result.currentTime}`);
+                log(`- Ready state: ${result.readyState}`);
+                log(`- Cross origin: ${result.crossOrigin}`);
+                log(`- Capture success: ${result.captureSuccess}`);
+                
+                if (result.captureSuccess) {
+                    log(`- Image data length: ${result.imageDataLength}`);
+                    document.getElementById('captureResult').src = result.imageData;
+                    document.getElementById('captureResult').style.display = 'block';
+                } else {
+                    log(`- Capture error: ${result.captureError}`);
+                }
+                
+            } catch (error) {
+                log(`ERROR: ${error.message}`);
+            }
+        }
+        
+        async function testCORS() {
+            log('Testing CORS configuration...');
+            
+            const tabs = await chrome.tabs.query({url: '*://*.youtube.com/watch*'});
+            if (tabs.length === 0) {
+                log('ERROR: No YouTube video tab found');
+                return;
+            }
+            
+            const tabId = tabs[0].id;
+            
+            try {
+                const results = await chrome.scripting.executeScript({
+                    target: { tabId: tabId },
+                    func: function() {
+                        const video = document.querySelector('video');
+                        if (!video) return { error: 'No video element found' };
+                        
+                        // Test different canvas operations
+                        const tests = [];
+                        
+                        // Test 1: Basic canvas
+                        try {
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            canvas.width = 100;
+                            canvas.height = 100;
+                            ctx.fillRect(0, 0, 100, 100);
+                            canvas.toDataURL();
+                            tests.push({ test: 'Basic canvas', success: true });
+                        } catch (e) {
+                            tests.push({ test: 'Basic canvas', success: false, error: e.toString() });
+                        }
+                        
+                        // Test 2: Draw video
+                        try {
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            canvas.width = video.videoWidth || 100;
+                            canvas.height = video.videoHeight || 100;
+                            ctx.drawImage(video, 0, 0);
+                            tests.push({ test: 'Draw video', success: true });
+                        } catch (e) {
+                            tests.push({ test: 'Draw video', success: false, error: e.toString() });
+                        }
+                        
+                        // Test 3: Export after video draw
+                        try {
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            canvas.width = video.videoWidth || 100;
+                            canvas.height = video.videoHeight || 100;
+                            ctx.drawImage(video, 0, 0);
+                            const data = canvas.toDataURL();
+                            tests.push({ test: 'Export after video draw', success: true, dataLength: data.length });
+                        } catch (e) {
+                            tests.push({ test: 'Export after video draw', success: false, error: e.toString() });
+                        }
+                        
+                        return {
+                            videoSrc: video.src,
+                            videoCrossOrigin: video.crossOrigin,
+                            tests: tests
+                        };
+                    }
+                });
+                
+                const result = results[0].result;
+                log(`Video src: ${result.videoSrc}`);
+                log(`Video crossOrigin: ${result.videoCrossOrigin}`);
+                log('\nCanvas tests:');
+                result.tests.forEach(test => {
+                    if (test.success) {
+                        log(`✓ ${test.test} - Success${test.dataLength ? ` (${test.dataLength} bytes)` : ''}`);
+                    } else {
+                        log(`✗ ${test.test} - Failed: ${test.error}`);
+                    }
+                });
+                
+            } catch (error) {
+                log(`ERROR: ${error.message}`);
+            }
+        }
+        
+        async function testVideoAttributes() {
+            log('Checking video attributes...');
+            
+            const tabs = await chrome.tabs.query({url: '*://*.youtube.com/watch*'});
+            if (tabs.length === 0) {
+                log('ERROR: No YouTube video tab found');
+                return;
+            }
+            
+            const tabId = tabs[0].id;
+            
+            try {
+                const results = await chrome.scripting.executeScript({
+                    target: { tabId: tabId },
+                    func: function() {
+                        const video = document.querySelector('video');
+                        if (!video) return { error: 'No video element found' };
+                        
+                        // Get all video attributes
+                        const attrs = {};
+                        for (let attr of video.attributes) {
+                            attrs[attr.name] = attr.value;
+                        }
+                        
+                        // Check parent elements
+                        const parents = [];
+                        let el = video;
+                        for (let i = 0; i < 5 && el.parentElement; i++) {
+                            el = el.parentElement;
+                            parents.push({
+                                tagName: el.tagName,
+                                className: el.className,
+                                id: el.id
+                            });
+                        }
+                        
+                        return {
+                            attributes: attrs,
+                            computed: {
+                                position: getComputedStyle(video).position,
+                                zIndex: getComputedStyle(video).zIndex,
+                                opacity: getComputedStyle(video).opacity,
+                                visibility: getComputedStyle(video).visibility
+                            },
+                            parents: parents,
+                            rect: video.getBoundingClientRect()
+                        };
+                    }
+                });
+                
+                const result = results[0].result;
+                log('Video attributes:');
+                Object.entries(result.attributes).forEach(([key, value]) => {
+                    log(`  ${key}: ${value}`);
+                });
+                
+                log('\nComputed styles:');
+                Object.entries(result.computed).forEach(([key, value]) => {
+                    log(`  ${key}: ${value}`);
+                });
+                
+                log('\nParent elements:');
+                result.parents.forEach((parent, i) => {
+                    log(`  ${i}: <${parent.tagName}> id="${parent.id}" class="${parent.className}"`);
+                });
+                
+                log(`\nVideo position: ${result.rect.x}, ${result.rect.y} (${result.rect.width}x${result.rect.height})`);
+                
+            } catch (error) {
+                log(`ERROR: ${error.message}`);
+            }
+        }
+    </script>
+</body>
+</html>

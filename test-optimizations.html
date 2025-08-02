@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NotNot 최적화 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background: #1976d2;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #1565c0;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>NotNot 최적화 테스트 페이지</h1>
+    
+    <div class="test-section">
+        <h2>1. 성능 모니터링 테스트</h2>
+        <button onclick="testPerformanceMonitor()">테스트 실행</button>
+        <div id="perf-result" class="test-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. LRU 캐시 테스트</h2>
+        <button onclick="testLRUCache()">테스트 실행</button>
+        <div id="cache-result" class="test-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. 이미지 압축 테스트</h2>
+        <input type="file" id="image-input" accept="image/*">
+        <button onclick="testImageCompression()">압축 테스트</button>
+        <div id="compress-result" class="test-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Debounce/Throttle 테스트</h2>
+        <button onclick="testDebounce()">Debounce 테스트</button>
+        <button onclick="testThrottle()">Throttle 테스트</button>
+        <div id="debounce-result" class="test-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>5. 메모리 사용량 체크</h2>
+        <button onclick="checkMemoryUsage()">메모리 체크</button>
+        <div id="memory-result" class="test-result"></div>
+    </div>
+
+    <script>
+        // Performance Monitor Test
+        class PerformanceMonitor {
+            constructor() {
+                this.marks = new Map();
+            }
+            
+            start(label) {
+                this.marks.set(label, performance.now());
+            }
+            
+            end(label) {
+                const start = this.marks.get(label);
+                if (start) {
+                    const duration = performance.now() - start;
+                    this.marks.delete(label);
+                    return duration;
+                }
+                return 0;
+            }
+        }
+        
+        function testPerformanceMonitor() {
+            const monitor = new PerformanceMonitor();
+            const resultEl = document.getElementById('perf-result');
+            
+            monitor.start('test-operation');
+            
+            // Simulate some work
+            setTimeout(() => {
+                const duration = monitor.end('test-operation');
+                resultEl.innerHTML = `<span class="success">✓ 성능 모니터링 작동 확인</span><br>테스트 작업 소요 시간: ${duration.toFixed(2)}ms`;
+            }, 100);
+        }
+        
+        // LRU Cache Test
+        class LRUCache {
+            constructor(maxSize = 3) {
+                this.maxSize = maxSize;
+                this.cache = new Map();
+            }
+            
+            get(key) {
+                if (!this.cache.has(key)) return null;
+                const value = this.cache.get(key);
+                this.cache.delete(key);
+                this.cache.set(key, value);
+                return value;
+            }
+            
+            set(key, value) {
+                if (this.cache.has(key)) {
+                    this.cache.delete(key);
+                } else if (this.cache.size >= this.maxSize) {
+                    const firstKey = this.cache.keys().next().value;
+                    this.cache.delete(firstKey);
+                }
+                this.cache.set(key, value);
+            }
+        }
+        
+        function testLRUCache() {
+            const cache = new LRUCache(3);
+            const resultEl = document.getElementById('cache-result');
+            let results = [];
+            
+            // Add items
+            cache.set('a', 1);
+            cache.set('b', 2);
+            cache.set('c', 3);
+            results.push(`캐시 추가: a=1, b=2, c=3`);
+            
+            // Access 'a' to move it to end
+            cache.get('a');
+            results.push(`'a' 접근 (최근 사용으로 이동)`);
+            
+            // Add 'd', should evict 'b'
+            cache.set('d', 4);
+            results.push(`'d=4' 추가 (최대 크기 3, 'b' 제거됨)`);
+            
+            // Check what's in cache
+            const hasA = cache.get('a') !== null;
+            const hasB = cache.get('b') !== null;
+            const hasC = cache.get('c') !== null;
+            const hasD = cache.get('d') !== null;
+            
+            results.push(`캐시 상태: a=${hasA}, b=${hasB}, c=${hasC}, d=${hasD}`);
+            
+            if (hasA && !hasB && hasC && hasD) {
+                results.push(`<span class="success">✓ LRU 캐시 정상 작동</span>`);
+            } else {
+                results.push(`<span class="error">✗ LRU 캐시 오류</span>`);
+            }
+            
+            resultEl.innerHTML = results.join('<br>');
+        }
+        
+        // Image Compression Test
+        async function testImageCompression() {
+            const input = document.getElementById('image-input');
+            const resultEl = document.getElementById('compress-result');
+            
+            if (!input.files[0]) {
+                resultEl.innerHTML = '<span class="error">이미지를 선택해주세요</span>';
+                return;
+            }
+            
+            const file = input.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = async (e) => {
+                const originalSize = e.target.result.length;
+                const compressedDataUrl = await compressImage(e.target.result);
+                const compressedSize = compressedDataUrl.length;
+                
+                const reduction = ((1 - compressedSize / originalSize) * 100).toFixed(1);
+                
+                resultEl.innerHTML = `
+                    <span class="success">✓ 이미지 압축 완료</span><br>
+                    원본 크기: ${(originalSize / 1024).toFixed(1)}KB<br>
+                    압축 후: ${(compressedSize / 1024).toFixed(1)}KB<br>
+                    압축률: ${reduction}%
+                `;
+            };
+            
+            reader.readAsDataURL(file);
+        }
+        
+        async function compressImage(dataUrl, maxWidth = 1920) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    let { width, height } = img;
+                    
+                    if (width > maxWidth) {
+                        height = (maxWidth / width) * height;
+                        width = maxWidth;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    const size = dataUrl.length;
+                    let quality = 0.92;
+                    
+                    if (size > 5 * 1024 * 1024) {
+                        quality = 0.7;
+                    } else if (size > 2.5 * 1024 * 1024) {
+                        quality = 0.8;
+                    }
+                    
+                    resolve(canvas.toDataURL('image/jpeg', quality));
+                };
+                img.src = dataUrl;
+            });
+        }
+        
+        // Debounce/Throttle Test
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        function throttle(func, limit) {
+            let inThrottle;
+            return function(...args) {
+                if (!inThrottle) {
+                    func.apply(this, args);
+                    inThrottle = true;
+                    setTimeout(() => inThrottle = false, limit);
+                }
+            };
+        }
+        
+        let debounceCount = 0;
+        let throttleCount = 0;
+        
+        function testDebounce() {
+            const resultEl = document.getElementById('debounce-result');
+            debounceCount = 0;
+            let callCount = 0;
+            
+            const debouncedFn = debounce(() => {
+                debounceCount++;
+            }, 500);
+            
+            // Call multiple times rapidly
+            const interval = setInterval(() => {
+                callCount++;
+                debouncedFn();
+                
+                if (callCount >= 10) {
+                    clearInterval(interval);
+                    
+                    setTimeout(() => {
+                        resultEl.innerHTML = `
+                            <span class="success">✓ Debounce 테스트</span><br>
+                            함수 호출 횟수: ${callCount}<br>
+                            실제 실행 횟수: ${debounceCount} (마지막 호출만 실행)
+                        `;
+                    }, 600);
+                }
+            }, 50);
+        }
+        
+        function testThrottle() {
+            const resultEl = document.getElementById('debounce-result');
+            throttleCount = 0;
+            let callCount = 0;
+            
+            const throttledFn = throttle(() => {
+                throttleCount++;
+            }, 200);
+            
+            // Call multiple times rapidly
+            const interval = setInterval(() => {
+                callCount++;
+                throttledFn();
+                
+                if (callCount >= 10) {
+                    clearInterval(interval);
+                    
+                    setTimeout(() => {
+                        resultEl.innerHTML = `
+                            <span class="success">✓ Throttle 테스트</span><br>
+                            함수 호출 횟수: ${callCount}<br>
+                            실제 실행 횟수: ${throttleCount} (200ms마다 실행)
+                        `;
+                    }, 300);
+                }
+            }, 50);
+        }
+        
+        // Memory Usage Check
+        function checkMemoryUsage() {
+            const resultEl = document.getElementById('memory-result');
+            
+            if (performance.memory) {
+                const used = (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(2);
+                const total = (performance.memory.totalJSHeapSize / 1024 / 1024).toFixed(2);
+                const limit = (performance.memory.jsHeapSizeLimit / 1024 / 1024).toFixed(2);
+                
+                resultEl.innerHTML = `
+                    <span class="success">✓ 메모리 사용량</span><br>
+                    사용 중: ${used}MB<br>
+                    할당됨: ${total}MB<br>
+                    제한: ${limit}MB<br>
+                    사용률: ${((used / total) * 100).toFixed(1)}%
+                `;
+            } else {
+                resultEl.innerHTML = '<span class="error">메모리 정보를 사용할 수 없습니다 (Chrome DevTools 필요)</span>';
+            }
+        }
+    </script>
+</body>
+</html>

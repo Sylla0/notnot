@@ -1,87 +1,133 @@
-# NotNot - Video Learning Assistant Chrome Extension
+# NotNot - YouTube Video Learning Assistant Chrome Extension
 
-NotNot is a Chrome extension that enhances your video learning experience by allowing you to capture screenshots, take notes, and transcribe videos in real-time.
+NotNot is a Chrome extension designed specifically for YouTube that helps you capture screenshots, take notes, and organize your video learning experience.
 
-## Features
+## 🎯 Features
 
-### ✅ MVP Features (Implemented)
-- **Video Detection**: Automatically detects videos on YouTube, Vimeo, Coursera, Udemy, and EdX
-- **Screenshot Capture**: Capture full frame or select regions with annotations
-- **Note Taking**: Rich text editor with markdown support in a convenient sidebar
-- **Basic Transcription**: Web Speech API integration for real-time transcription
-- **Storage**: Local storage using IndexedDB for offline access
+### Current Features (MVP)
+- **YouTube Video Detection**: Automatically detects YouTube videos and adds overlay controls
+- **Screenshot Capture**: Capture video frames with timestamps
+- **Note Taking**: Rich text editor sidebar for taking notes while watching
+- **Auto-save**: Notes are automatically saved as you type
+- **Capture Gallery**: View and insert captured screenshots into notes
 - **Export**: Export notes as Markdown files
+- **Dashboard**: View all your notes in one place
 
-### 🚀 Future Enhancements
-- Cloud synchronization
-- Advanced OCR for text extraction from screenshots
-- AI-powered summaries and Q&A
-- Code snippet execution
-- Multi-language support
-- Video clip recording
-- Collaboration features
+### 🚀 Installation
 
-## Installation
-
+#### Development Mode
 1. Clone this repository:
-```bash
-git clone https://github.com/yourusername/notnot.git
-cd notnot
-```
+   ```bash
+   git clone https://github.com/yourusername/notnot.git
+   cd notnot
+   ```
 
-2. Generate icon files:
-```bash
-# Create placeholder icons (replace with actual PNG icons)
-node assets/icons/generate-icons.js
-```
+2. Build the extension:
+   ```bash
+   # Development build (with console logs)
+   ./build.sh
+   
+   # Production build (console logs removed)
+   ./build.sh --prod
+   ```
 
-3. Load the extension in Chrome:
-   - Open Chrome and navigate to `chrome://extensions/`
+3. Load in Chrome:
+   - Open `chrome://extensions/`
    - Enable "Developer mode"
    - Click "Load unpacked"
-   - Select the `notnot` directory
+   - Select the `dist` directory
 
-## Usage
+#### From Package
+1. Download the latest release
+2. Extract the archive
+3. Follow step 3 above
 
-1. **Navigate to a video**: Visit any supported video platform
-2. **Video detection**: NotNot will automatically detect the video and show overlay controls
-3. **Capture screenshots**: Click the camera icon to capture the current frame
-4. **Take notes**: Click the notes icon to open the sidebar editor
-5. **Start transcription**: Click the microphone icon to begin voice transcription
-6. **Export notes**: Use the export button to save your notes as Markdown
+## 📖 Usage
 
-## Project Structure
+1. **Navigate to a YouTube video**
+2. **Look for NotNot controls** on the video player:
+   - 📷 Camera icon: Capture screenshot
+   - 📝 Notes icon: Toggle notes sidebar
+3. **Use the extension popup** for quick access to features
+4. **Access the dashboard** to view all your notes
 
+### Keyboard Shortcuts
+- None currently (planned for future release)
+
+## 🛠️ Development
+
+### Project Structure
 ```
 notnot/
-├── manifest.json           # Extension configuration
-├── background/            # Background service worker
-├── content-scripts/       # Scripts injected into web pages
-├── sidebar/              # Note-taking sidebar interface
-├── popup/                # Extension popup interface
-├── shared/               # Shared utilities and constants
-└── assets/               # Icons and styles
+├── manifest.json          # Extension configuration
+├── background/           # Background service worker
+├── content-scripts/      # YouTube page integration
+├── popup/               # Extension popup
+├── sidebar/             # Notes sidebar (injected)
+├── dashboard/           # All notes view
+├── options/             # Settings page
+├── assets/              # Icons and styles
+└── build.sh            # Build script
 ```
 
-## Development
+### Building
+```bash
+# Development build
+./build.sh
+
+# Production build (removes console.log)
+./build.sh --prod
+```
 
 ### Key Technologies
 - Chrome Extension Manifest V3
+- Vanilla JavaScript (no frameworks for performance)
 - IndexedDB for local storage
-- Web Speech API for transcription
-- Canvas API for screenshot capture
-- ContentEditable for rich text editing
+- Content scripts for YouTube integration
 
-### Building for Production
-1. Minify JavaScript and CSS files
-2. Generate proper icon files in PNG format
-3. Update manifest version
-4. Create a ZIP file for Chrome Web Store submission
+## 🔍 Troubleshooting
 
-## Contributing
+### Extension not working?
+1. Make sure you're on a YouTube video page (youtube.com/watch?v=...)
+2. Refresh the YouTube page after installing
+3. Check Chrome DevTools console for errors
+
+### Notes not saving?
+- Notes are saved automatically after 1 second of inactivity
+- Check if IndexedDB is enabled in your browser
+
+### Can't see video controls?
+- The video must be loaded and ready
+- Try refreshing the page
+- Make sure you're on youtube.com
+
+## 🚧 Roadmap
+
+### Planned Features
+- [ ] Video transcription support
+- [ ] AI-powered summaries
+- [ ] Cloud synchronization
+- [ ] Multiple language support
+- [ ] Video clip recording
+- [ ] Advanced text formatting
+- [ ] Keyboard shortcuts
+- [ ] Dark mode
+- [ ] Export to Notion/Obsidian
+
+## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## License
+## 📄 License
 
 MIT License - see LICENSE file for details
+
+## 🙏 Acknowledgments
+
+- Built for video learners by video learners
+- Inspired by the need for better video learning tools
+- Thanks to all contributors and testers
+
+---
+
+**Note**: This extension is not affiliated with YouTube or Google. It's an independent tool designed to enhance your video learning experience.

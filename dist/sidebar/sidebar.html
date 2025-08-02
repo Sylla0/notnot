@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NotNot - Notes</title>
+  <link rel="stylesheet" href="sidebar.css">
+</head>
+<body>
+  <div class="sidebar-container">
+    <!-- Header -->
+    <div class="sidebar-header">
+      <div class="video-info">
+        <h2 id="video-title">Loading...</h2>
+        <span id="video-platform" class="platform-badge"></span>
+      </div>
+      <div class="header-actions">
+        <button class="btn-icon" id="export-btn" title="Export Notes">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+        </button>
+        <button class="btn-icon" id="settings-btn" title="Settings">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M12 1v6m0 6v6m9-9h-6m-6 0H3"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-tab="notes">Notes</button>
+      <button class="tab" data-tab="captures">Captures</button>
+      <button class="tab" data-tab="transcript">Transcript</button>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content-area">
+      <!-- Notes Tab -->
+      <div id="notes-tab" class="tab-content active">
+        <div class="note-editor">
+          <div class="editor-toolbar">
+            <button class="toolbar-btn" data-action="bold" title="Bold">
+              <strong>B</strong>
+            </button>
+            <button class="toolbar-btn" data-action="italic" title="Italic">
+              <em>I</em>
+            </button>
+            <button class="toolbar-btn" data-action="code" title="Code">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+              </svg>
+            </button>
+            <button class="toolbar-btn" data-action="bullet" title="Bullet List">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+            </button>
+            <button class="toolbar-btn" data-action="timestamp" title="Insert Timestamp">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div id="note-content" contenteditable="true" class="note-content" placeholder="Start taking notes..."></div>
+        </div>
+      </div>
+
+      <!-- Captures Tab -->
+      <div id="captures-tab" class="tab-content">
+        <div class="captures-grid" id="captures-grid">
+          <!-- Captures will be inserted here -->
+        </div>
+      </div>
+
+      <!-- Transcript Tab -->
+      <div id="transcript-tab" class="tab-content">
+        <div class="transcript-controls">
+          <button class="btn-primary" id="toggle-transcription">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            </svg>
+            Start Transcription
+          </button>
+        </div>
+        <div class="transcript-content" id="transcript-content">
+          <!-- Transcript entries will be inserted here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span id="save-status">All changes saved</span>
+      <span id="capture-count">0 captures</span>
+    </div>
+  </div>
+
+  <script src="sidebar.js"></script>
+</body>
+</html>
