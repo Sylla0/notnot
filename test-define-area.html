@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Define Area Shortcut</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .test-section {
+      margin: 20px 0;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    .status {
+      padding: 10px;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+    .success { background: #4ade80; }
+    .info { background: #60a5fa; }
+    .warning { background: #fbbf24; }
+    .error { background: #f87171; }
+    .video-container {
+      margin: 20px 0;
+      padding: 20px;
+      background: #f3f4f6;
+      border-radius: 8px;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    #log {
+      background: #1e293b;
+      color: #f1f5f9;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      max-height: 200px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>Define Area Shortcut Test</h1>
+  
+  <div class="test-section">
+    <h2>Instructions</h2>
+    <ol>
+      <li>Install the NotNot extension</li>
+      <li>Navigate to a YouTube video</li>
+      <li>Press Alt+Shift+A (or your custom shortcut) to define capture area</li>
+      <li>Check the console log below for debug messages</li>
+    </ol>
+  </div>
+  
+  <div class="test-section">
+    <h2>Test Areas</h2>
+    
+    <div class="video-container">
+      <h3>Simulated Video Area</h3>
+      <video width="400" height="225" controls>
+        <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    </div>
+    
+    <div>
+      <h3>Input Field Test</h3>
+      <input type="text" placeholder="Click here and try Alt+Shift+A - it should still work">
+    </div>
+    
+    <div>
+      <h3>Textarea Test</h3>
+      <textarea rows="3" placeholder="Click here and try Alt+Shift+A - it should still work"></textarea>
+    </div>
+  </div>
+  
+  <div class="test-section">
+    <h2>Keyboard Event Monitor</h2>
+    <div id="log"></div>
+    <button onclick="clearLog()">Clear Log</button>
+  </div>
+  
+  <div class="test-section">
+    <h2>Test Results</h2>
+    <div id="results"></div>
+  </div>
+
+  <script>
+    const log = document.getElementById('log');
+    const results = document.getElementById('results');
+    
+    // Monitor keyboard events
+    document.addEventListener('keydown', (e) => {
+      if (e.altKey || e.ctrlKey || e.shiftKey || e.metaKey) {
+        const parts = [];
+        if (e.ctrlKey) parts.push('Ctrl');
+        if (e.altKey) parts.push('Alt');
+        if (e.shiftKey) parts.push('Shift');
+        if (e.metaKey) parts.push('Cmd');
+        parts.push(e.key);
+        
+        const shortcut = parts.join('+');
+        const timestamp = new Date().toLocaleTimeString();
+        
+        addLog(`[${timestamp}] Keydown: ${shortcut} | Target: ${e.target.tagName}`);
+        
+        // Check if it's Define Area shortcut
+        if (e.altKey && e.shiftKey && e.key.toLowerCase() === 'a') {
+          addLog('  → Define Area shortcut detected!');
+          
+          // Check if extension is handling it
+          if (window.videoDetector) {
+            addResult('Extension detected ✓', 'success');
+          } else {
+            addResult('Extension not detected - Make sure NotNot is installed and active', 'warning');
+          }
+        }
+      }
+    }, true);
+    
+    // Listen for console messages
+    const originalLog = console.log;
+    console.log = function(...args) {
+      originalLog.apply(console, args);
+      const message = args.join(' ');
+      if (message.includes('NotNot') || message.includes('Define Area')) {
+        addLog(`[Console] ${message}`);
+      }
+    };
+    
+    function addLog(message) {
+      log.textContent += message + '\n';
+      log.scrollTop = log.scrollHeight;
+    }
+    
+    function clearLog() {
+      log.textContent = '';
+    }
+    
+    function addResult(message, type) {
+      const div = document.createElement('div');
+      div.className = `status ${type}`;
+      div.textContent = message;
+      results.appendChild(div);
+    }
+    
+    // Initial check
+    setTimeout(() => {
+      if (typeof chrome !== 'undefined' && chrome.storage) {
+        addResult('Chrome extension API available ✓', 'success');
+        
+        chrome.storage.sync.get('notnot_settings', (result) => {
+          if (result.notnot_settings) {
+            const defineAreaShortcut = result.notnot_settings.defineAreaShortcut || 'Alt+Shift+A';
+            addResult(`Define Area shortcut: ${defineAreaShortcut}`, 'info');
+          } else {
+            addResult('Using default shortcut: Alt+Shift+A', 'info');
+          }
+        });
+      } else {
+        addResult('Not in extension context - open this in a tab with NotNot enabled', 'error');
+      }
+    }, 1000);
+  </script>
+</body>
+</html>

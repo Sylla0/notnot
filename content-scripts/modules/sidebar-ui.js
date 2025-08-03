@@ -344,6 +344,10 @@ export class SidebarUI {
   }
 
   async addCapture(captureData) {
+    console.log('SidebarUI: addCapture called');
+    console.log('SidebarUI: storage exists?', !!this.storage);
+    console.log('SidebarUI: storage.db exists?', !!this.storage?.db);
+    
     if (!this.currentNote) {
       await this.updateVideoInfo();
     }

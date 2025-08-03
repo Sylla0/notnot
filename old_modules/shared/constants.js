@@ -19,9 +19,7 @@ export const CONSTANTS = {
     VIDEO_DETECTED: 'video_detected',
     CAPTURE_SCREENSHOT: 'capture_screenshot',
     TOGGLE_SIDEBAR: 'toggle_sidebar',
-    SAVE_NOTE: 'save_note',
-    START_RECORDING: 'start_recording',
-    STOP_RECORDING: 'stop_recording'
+    SAVE_NOTE: 'save_note'
   },
   
   UI: {

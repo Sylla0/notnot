@@ -91,8 +91,6 @@ class NotNotSidebar {
   constructor() {
     this.currentNote = null;
     this.captures = [];
-    this.transcriptEntries = [];
-    this.isRecording = false;
     this.autoSaveTimer = null;
     
     this.init();
@@ -122,8 +120,6 @@ class NotNotSidebar {
     // Export button
     document.getElementById('export-btn').addEventListener('click', () => this.exportNotes());
 
-    // Transcription toggle
-    document.getElementById('toggle-transcription').addEventListener('click', () => this.toggleTranscription());
   }
 
   setupMessageListener() {
@@ -136,12 +132,6 @@ class NotNotSidebar {
       }
     });
 
-    // Listen for messages from extension
-    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-      if (request.type === 'TRANSCRIPT_UPDATE') {
-        this.addTranscriptEntry(request.data);
-      }
-    });
   }
 
   async initializeStorage() {
@@ -175,7 +165,6 @@ class NotNotSidebar {
         id: this.generateId(),
         videoInfo: videoInfo,
         captures: [],
-        transcriptions: [],
         notes: {
           content: '',
           codeBlocks: []
@@ -294,67 +283,6 @@ class NotNotSidebar {
     document.execCommand('insertHTML', false, img);
   }
 
-  toggleTranscription() {
-    const btn = document.getElementById('toggle-transcription');
-    this.isRecording = !this.isRecording;
-    
-    if (this.isRecording) {
-      btn.classList.add('recording');
-      btn.innerHTML = `
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <rect x="9" y="9" width="6" height="6"></rect>
-        </svg>
-        Stop Transcription
-      `;
-      // Start transcription
-      this.startTranscription();
-    } else {
-      btn.classList.remove('recording');
-      btn.innerHTML = `
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-        </svg>
-        Start Transcription
-      `;
-      // Stop transcription
-      this.stopTranscription();
-    }
-  }
-
-  startTranscription() {
-    // Send message to content script to start recording
-    window.parent.postMessage({ type: 'START_TRANSCRIPTION' }, '*');
-  }
-
-  stopTranscription() {
-    // Send message to content script to stop recording
-    window.parent.postMessage({ type: 'STOP_TRANSCRIPTION' }, '*');
-  }
-
-  addTranscriptEntry(data) {
-    const transcriptContent = document.getElementById('transcript-content');
-    
-    const entry = document.createElement('div');
-    entry.className = 'transcript-entry';
-    entry.innerHTML = `
-      <div class="transcript-timestamp" data-time="${data.timestamp}">
-        ${this.formatTimestamp(data.timestamp)}
-      </div>
-      <div class="transcript-text">${data.text}</div>
-    `;
-    
-    // Add click handler to jump to timestamp
-    entry.querySelector('.transcript-timestamp').addEventListener('click', (e) => {
-      const time = parseFloat(e.target.dataset.time);
-      window.parent.postMessage({ type: 'SEEK_TO', time: time }, '*');
-    });
-    
-    transcriptContent.appendChild(entry);
-    
-    // Auto-scroll to bottom
-    transcriptContent.scrollTop = transcriptContent.scrollHeight;
-  }
 
   async exportNotes() {
     if (!this.currentNote) return;
@@ -365,7 +293,6 @@ class NotNotSidebar {
       videoUrl: this.currentNote.videoInfo.url,
       notes: this.currentNote.notes.content,
       captures: this.captures,
-      transcript: this.transcriptEntries,
       exportDate: new Date().toISOString()
     };
     
@@ -399,12 +326,6 @@ class NotNotSidebar {
       markdown += `*[Captures included in export folder]*\n\n`;
     }
     
-    if (data.transcript.length > 0) {
-      markdown += `## Transcript\n\n`;
-      data.transcript.forEach(entry => {
-        markdown += `**[${this.formatTimestamp(entry.timestamp)}]** ${entry.text}\n\n`;
-      });
-    }
     
     return markdown;
   }

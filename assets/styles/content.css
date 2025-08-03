@@ -22,10 +22,10 @@
 
 /* Control Buttons */
 .notnot-btn {
-  width: 36px;
+  width: 48px;
   height: 36px;
   border: none;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--overlay-control-bg, rgba(255, 255, 255, 0.1));
   color: white;
   border-radius: 6px;
   cursor: pointer;
@@ -36,7 +36,7 @@
 }
 
 .notnot-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--overlay-control-hover, rgba(255, 255, 255, 0.2));
   transform: scale(1.05);
 }
 
@@ -50,23 +50,15 @@
   stroke-width: 2;
 }
 
-/* Recording State */
-.notnot-record.recording {
-  background: #ff4444;
-  animation: pulse 1.5s infinite;
+/* Enhanced Area Selector Styles */
+.notnot-capture-area {
+  cursor: none !important;
 }
 
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(255, 68, 68, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(255, 68, 68, 0);
-  }
+.notnot-capture-area * {
+  cursor: none !important;
 }
+
 
 /* Timestamp */
 .notnot-timestamp {
@@ -82,12 +74,12 @@
   position: fixed;
   top: 0;
   right: 0;
-  width: 400px;
+  width: 500px;
   height: 100vh;
   border: none;
-  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+  box-shadow: -2px 0 10px var(--shadow, rgba(0, 0, 0, 0.1));
   z-index: 10000;
-  background: white;
+  background: var(--bg-primary, white);
 }
 
 /* Selection Overlay */
@@ -130,8 +122,8 @@ video:not(:hover) ~ .notnot-overlay {
 
 /* Toolbar */
 .notnot-toolbar-btn {
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-primary, white);
+  border: 1px solid var(--border-color, #e5e7eb);
   border-radius: 4px;
   padding: 6px;
   cursor: pointer;
@@ -139,13 +131,13 @@ video:not(:hover) ~ .notnot-overlay {
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
-  color: #374151;
+  color: var(--text-secondary, #374151);
 }
 
 .notnot-toolbar-btn:hover {
-  background: #f3f4f6;
-  border-color: #d1d5db;
-  color: #111827;
+  background: var(--bg-tertiary, #f3f4f6);
+  border-color: var(--border-hover, #d1d5db);
+  color: var(--text-primary, #111827);
 }
 
 .notnot-toolbar-btn:active {
@@ -155,7 +147,7 @@ video:not(:hover) ~ .notnot-overlay {
 /* Editor placeholder */
 #notnot-note-editor:empty:not(:focus)::before {
   content: attr(data-placeholder);
-  color: #9ca3af;
+  color: var(--text-muted, #9ca3af);
   font-size: 14px;
   pointer-events: none;
   position: absolute;
@@ -180,7 +172,7 @@ video:not(:hover) ~ .notnot-overlay {
 }
 
 #notnot-note-editor table td {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-color, #e5e7eb);
   padding: 8px;
 }
 
@@ -188,7 +180,7 @@ video:not(:hover) ~ .notnot-overlay {
   font-size: 18px;
   font-weight: 600;
   margin: 16px 0 8px 0;
-  color: #111827;
+  color: var(--text-primary, #111827);
 }
 
 /* Slash command menu */
@@ -246,7 +238,7 @@ video:not(:hover) ~ .notnot-overlay {
   }
   
   .notnot-btn {
-    width: 32px;
+    width: 40px;
     height: 32px;
   }
 }

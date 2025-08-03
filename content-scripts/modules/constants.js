@@ -18,15 +18,14 @@ export const CONSTANTS = {
   MESSAGES: {
     VIDEO_DETECTED: 'video_detected',
     CAPTURE_SCREENSHOT: 'capture_screenshot',
+    DEFINE_CAPTURE_AREA: 'define_capture_area',
     TOGGLE_SIDEBAR: 'toggle_sidebar',
     SAVE_NOTE: 'save_note',
-    START_RECORDING: 'start_recording',
-    STOP_RECORDING: 'stop_recording',
     CHECK_VIDEO: 'CHECK_VIDEO'
   },
   
   UI: {
-    SIDEBAR_WIDTH: '400px',
+    SIDEBAR_WIDTH: '500px',
     OVERLAY_Z_INDEX: 9999,
     CAPTURE_QUALITY: 0.92,
     CAPTURE_FORMAT: 'jpeg',
@@ -36,6 +35,7 @@ export const CONSTANTS = {
   
   SHORTCUTS: {
     CAPTURE: 'Alt+S',
+    DEFINE_AREA: 'Alt+Shift+A',
     TOGGLE_NOTES: 'Alt+N'
   },
   

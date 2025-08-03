@@ -22,6 +22,10 @@ export class AreaSelector {
   }
   
   start() {
+    console.log('AreaSelector: start() called');
+    console.log('AreaSelector: video element:', this.video);
+    console.log('AreaSelector: document.body exists?', !!document.body);
+    
     // Create overlay
     this.overlay = document.createElement('div');
     this.overlay.className = CSS_CLASSES.CAPTURE_AREA;
@@ -33,9 +37,11 @@ export class AreaSelector {
       height: 100%;
       background: rgba(0, 0, 0, 0.5);
       z-index: 2147483646;
-      cursor: crosshair;
+      cursor: none;
       user-select: none;
     `;
+    
+    console.log('AreaSelector: overlay created');
     
     // Create selection box
     this.selection = document.createElement('div');
@@ -60,14 +66,66 @@ export class AreaSelector {
       pointer-events: none;
     `;
     
+    // Create custom crosshair cursor
+    this.crosshair = document.createElement('div');
+    this.crosshair.style.cssText = `
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      pointer-events: none;
+      z-index: 2147483647;
+      display: none;
+    `;
+    this.crosshair.innerHTML = `
+      <svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+        <!-- Outer circle -->
+        <circle cx="25" cy="25" r="20" fill="none" stroke="white" stroke-width="2" opacity="0.8"/>
+        <circle cx="25" cy="25" r="20" fill="none" stroke="black" stroke-width="2" stroke-dasharray="2 2" opacity="0.8"/>
+        
+        <!-- Crosshair lines -->
+        <line x1="25" y1="5" x2="25" y2="20" stroke="white" stroke-width="3"/>
+        <line x1="25" y1="5" x2="25" y2="20" stroke="black" stroke-width="1"/>
+        
+        <line x1="25" y1="30" x2="25" y2="45" stroke="white" stroke-width="3"/>
+        <line x1="25" y1="30" x2="25" y2="45" stroke="black" stroke-width="1"/>
+        
+        <line x1="5" y1="25" x2="20" y2="25" stroke="white" stroke-width="3"/>
+        <line x1="5" y1="25" x2="20" y2="25" stroke="black" stroke-width="1"/>
+        
+        <line x1="30" y1="25" x2="45" y2="25" stroke="white" stroke-width="3"/>
+        <line x1="30" y1="25" x2="45" y2="25" stroke="black" stroke-width="1"/>
+        
+        <!-- Center dot -->
+        <circle cx="25" cy="25" r="3" fill="white" opacity="0.9"/>
+        <circle cx="25" cy="25" r="2" fill="red"/>
+      </svg>
+    `;
+    
     this.overlay.appendChild(this.selection);
     this.overlay.appendChild(this.dimensionDisplay);
-    document.body.appendChild(this.overlay);
+    this.overlay.appendChild(this.crosshair);
+    
+    console.log('AreaSelector: Appending overlay to document.body');
+    try {
+      document.body.appendChild(this.overlay);
+      console.log('AreaSelector: Overlay appended successfully');
+      console.log('AreaSelector: Overlay in DOM?', document.body.contains(this.overlay));
+      console.log('AreaSelector: Overlay offsetWidth:', this.overlay.offsetWidth);
+      console.log('AreaSelector: Overlay offsetHeight:', this.overlay.offsetHeight);
+    } catch (error) {
+      console.error('AreaSelector: Failed to append overlay', error);
+    }
     
     // Add event listeners
     this.overlay.addEventListener('mousedown', this.handleMouseDown);
     this.overlay.addEventListener('mousemove', this.handleMouseMove);
     this.overlay.addEventListener('mouseup', this.handleMouseUp);
+    this.overlay.addEventListener('mouseenter', () => {
+      this.crosshair.style.display = 'block';
+    });
+    this.overlay.addEventListener('mouseleave', () => {
+      this.crosshair.style.display = 'none';
+    });
     
     // Touch support
     this.overlay.addEventListener('touchstart', this.handleTouchStart);
@@ -104,6 +162,10 @@ export class AreaSelector {
   }
   
   handleMouseMove(e) {
+    // Update crosshair position
+    this.crosshair.style.left = (e.clientX - 25) + 'px';
+    this.crosshair.style.top = (e.clientY - 25) + 'px';
+    
     if (!this.isSelecting) return;
     this.updateSelection(e.clientX, e.clientY);
   }
@@ -204,5 +266,6 @@ export class AreaSelector {
     // Clear references
     this.selection = null;
     this.dimensionDisplay = null;
+    this.crosshair = null;
   }
 }

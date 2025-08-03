@@ -1,0 +1,19 @@
+{
+  "timestamp": "2025-08-04T00:10:28.529564",
+  "original": {
+    "file": "content-scripts/notnot-content.js",
+    "size_kb": 70.8,
+    "lines": 2173
+  },
+  "bundle": {
+    "file": "notnot-content-bundle.js",
+    "size_kb": 66.22,
+    "lines": 2241
+  },
+  "optimized": {
+    "file": "notnot-content.min.js",
+    "size_kb": 43.42,
+    "lines": 17
+  },
+  "reduction_percent": 38.7
+}

@@ -22,14 +22,13 @@ const CONSTANTS = {
   MESSAGES: {
     VIDEO_DETECTED: 'video_detected',
     CAPTURE_SCREENSHOT: 'capture_screenshot',
+    DEFINE_CAPTURE_AREA: 'define_capture_area',
     TOGGLE_SIDEBAR: 'toggle_sidebar',
-    SAVE_NOTE: 'save_note',
-    START_RECORDING: 'start_recording',
-    STOP_RECORDING: 'stop_recording'
+    SAVE_NOTE: 'save_note'
   },
   
   UI: {
-    SIDEBAR_WIDTH: '400px',
+    SIDEBAR_WIDTH: '500px',
     OVERLAY_Z_INDEX: 9999,
     CAPTURE_QUALITY: 0.92
   }
@@ -52,7 +51,17 @@ const utils = {
     return `${minutes}:${secs.toString().padStart(2, '0')}`;
   },
 
+  // Cache for video title
+  _titleCache: null,
+  _titleCacheTime: 0,
+  
   getVideoTitle() {
+    // Return cached title if fresh (within 10 seconds)
+    const now = Date.now();
+    if (this._titleCache && now - this._titleCacheTime < 10000) {
+      return this._titleCache;
+    }
+    
     // YouTube specific selectors
     const titleSelectors = [
       'h1.ytd-watch-metadata yt-formatted-string',
@@ -64,11 +73,15 @@ const utils = {
     for (const selector of titleSelectors) {
       const element = document.querySelector(selector);
       if (element && element.textContent) {
-        return element.textContent.trim();
+        this._titleCache = element.textContent.trim();
+        this._titleCacheTime = now;
+        return this._titleCache;
       }
     }
 
-    return document.title.replace(' - YouTube', '') || 'Untitled Video';
+    this._titleCache = document.title.replace(' - YouTube', '') || 'Untitled Video';
+    this._titleCacheTime = now;
+    return this._titleCache;
   },
 
   debounce(func, wait) {
@@ -396,8 +409,13 @@ class SidebarUI {
 
   async init() {
     console.log('NotNot: Initializing sidebar...');
-    await this.storage.init();
-    console.log('NotNot: Storage initialized');
+    try {
+      await this.storage.init();
+      console.log('NotNot: Storage initialized, db:', !!this.storage.db);
+    } catch (error) {
+      console.error('NotNot: Failed to initialize storage:', error);
+      throw error;
+    }
     this.createSidebar();
     console.log('NotNot: Sidebar created');
   }
@@ -1073,6 +1091,18 @@ class SidebarUI {
   }
 
   async updateVideoInfo() {
+    // Ensure storage is initialized
+    if (!this.storage.db) {
+      console.log('NotNot: Storage not initialized in updateVideoInfo, initializing now...');
+      try {
+        await this.storage.init();
+        console.log('NotNot: Storage initialized successfully in updateVideoInfo');
+      } catch (error) {
+        console.error('NotNot: Failed to initialize storage in updateVideoInfo:', error);
+        throw error;
+      }
+    }
+    
     const title = utils.getVideoTitle();
     document.getElementById('notnot-video-title').textContent = title;
 
@@ -1267,6 +1297,18 @@ class SidebarUI {
     console.log('NotNot: Adding capture', captureData);
     console.log('NotNot: Current note before:', this.currentNote);
     
+    // Ensure storage is initialized
+    if (!this.storage.db) {
+      console.log('NotNot: Storage not initialized, initializing now...');
+      try {
+        await this.storage.init();
+        console.log('NotNot: Storage initialized successfully');
+      } catch (error) {
+        console.error('NotNot: Failed to initialize storage:', error);
+        throw error;
+      }
+    }
+    
     // Ensure we have a current note
     if (!this.currentNote) {
       console.log('NotNot: No current note, creating one...');
@@ -1380,6 +1422,11 @@ class StorageManager {
   }
 
   async saveNote(note) {
+    if (!this.db) {
+      console.error('StorageManager: Database not initialized for saveNote');
+      throw new Error('Database not initialized');
+    }
+    
     const transaction = this.db.transaction(['notes'], 'readwrite');
     const store = transaction.objectStore('notes');
     
@@ -1396,6 +1443,11 @@ class StorageManager {
   }
 
   async getNoteByVideoUrl(url) {
+    if (!this.db) {
+      console.error('StorageManager: Database not initialized for getNoteByVideoUrl');
+      throw new Error('Database not initialized');
+    }
+    
     const transaction = this.db.transaction(['notes'], 'readonly');
     const store = transaction.objectStore('notes');
     const index = store.index('videoUrl');
@@ -1408,6 +1460,11 @@ class StorageManager {
   }
 
   async saveCapture(capture) {
+    if (!this.db) {
+      console.error('StorageManager: Database not initialized for saveCapture');
+      throw new Error('Database not initialized');
+    }
+    
     const transaction = this.db.transaction(['captures'], 'readwrite');
     const store = transaction.objectStore('captures');
     
@@ -1419,6 +1476,11 @@ class StorageManager {
   }
 
   async getCapturesByNoteId(noteId) {
+    if (!this.db) {
+      console.error('StorageManager: Database not initialized for getCapturesByNoteId');
+      throw new Error('Database not initialized');
+    }
+    
     const transaction = this.db.transaction(['captures'], 'readonly');
     const store = transaction.objectStore('captures');
     const index = store.index('noteId');
@@ -1431,6 +1493,11 @@ class StorageManager {
   }
   
   async getAllNotes() {
+    if (!this.db) {
+      console.error('StorageManager: Database not initialized for getAllNotes');
+      throw new Error('Database not initialized');
+    }
+    
     const transaction = this.db.transaction(['notes'], 'readonly');
     const store = transaction.objectStore('notes');
     
@@ -1589,12 +1656,14 @@ class OverlayInjector {
       console.log('NotNot: Capture handled successfully');
       
       // Show a visual feedback
-      const captureBtn = this.overlay.querySelector('.notnot-capture');
-      if (captureBtn) {
+      if (this.overlay) {
+        const captureBtn = this.overlay.querySelector('.notnot-capture');
+        if (captureBtn) {
         captureBtn.style.background = '#10b981';
         setTimeout(() => {
           captureBtn.style.background = '';
         }, 300);
+        }
       }
       
       // Show toast notification for keyboard capture
@@ -1633,6 +1702,45 @@ class OverlayInjector {
     }, 2000);
   }
 
+  async handleDefineArea() {
+    console.log('NotNot: handleDefineArea called');
+    console.log('NotNot: Video element:', this.video);
+    
+    if (!this.video) {
+      console.error('NotNot: No video element available');
+      this.showToast('비디오를 찾을 수 없습니다');
+      return;
+    }
+    
+    try {
+      // Always show area selector for defining area
+      const selector = new AreaSelector(this.video, async (selection, cancelled) => {
+        if (cancelled) {
+          console.log('NotNot: Define area cancelled');
+          this.showToast('영역 설정이 취소되었습니다');
+          return;
+        }
+        
+        // Save the defined area
+        this.sidebar.lastCaptureArea = selection;
+        this.sidebar.rememberCaptureArea = true;
+        console.log('NotNot: Area defined and saved:', selection);
+        
+        // Save to storage
+        await this.sidebar.storage.saveSettings({
+          rememberCaptureArea: true
+        });
+        
+        this.showToast('캡처 영역이 설정되었습니다');
+      });
+      
+      selector.start();
+    } catch (error) {
+      console.error('NotNot: Define area failed', error);
+      this.showToast('영역 설정 실패: ' + error.message);
+    }
+  }
+
   toggleSidebar() {
     console.log('NotNot: Toggle sidebar clicked');
     this.sidebar.toggle();
@@ -1647,10 +1755,24 @@ class OverlayInjector {
   
   destroy() {
     console.log('NotNot: Destroying overlay injector');
+    
+    // Clean up event listeners
+    if (this.video) {
+      this.video.removeEventListener('timeupdate', this.updateTimestamp);
+    }
+    
+    // Remove overlay
     if (this.overlay) {
+      // Remove all event listeners from overlay buttons
+      const buttons = this.overlay.querySelectorAll('button');
+      buttons.forEach(btn => {
+        btn.replaceWith(btn.cloneNode(true));
+      });
       this.overlay.remove();
       this.overlay = null;
     }
+    
+    // Destroy sidebar
     if (this.sidebar) {
       this.sidebar.destroy();
       this.sidebar = null;
@@ -1742,7 +1864,7 @@ class VideoDetector {
   async initializeOverlay() {
     console.log('NotNot: Initializing overlay');
     this.overlayInjector = new OverlayInjector(this.video);
-    await this.overlayInjector.inject();
+    await this.overlayInjector.init();
   }
 
   destroy() {
@@ -1830,6 +1952,48 @@ videoDetector = new VideoDetector();
 window.videoDetector = videoDetector;
 videoDetector.init();
 
+// Handle messages from extension (popup, background script)
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log('NotNot: Message received', request);
+  
+  if (request.type === 'CHECK_VIDEO') {
+    // Check if we have a video
+    const hasVideo = !!videoDetector.video;
+    const title = document.title || 'YouTube Video';
+    sendResponse({ hasVideo, title });
+    return true;
+  }
+  
+  // Make sure we have the overlay injector ready
+  if (!videoDetector || !videoDetector.overlayInjector) {
+    console.log('NotNot: Video detector not ready for message');
+    sendResponse({ success: false, error: 'Not ready' });
+    return true;
+  }
+  
+  switch (request.type) {
+    case CONSTANTS.MESSAGES.CAPTURE_SCREENSHOT:
+      videoDetector.overlayInjector.handleCapture();
+      sendResponse({ success: true });
+      break;
+      
+    case CONSTANTS.MESSAGES.DEFINE_CAPTURE_AREA:
+      videoDetector.overlayInjector.handleDefineArea();
+      sendResponse({ success: true });
+      break;
+      
+    case CONSTANTS.MESSAGES.TOGGLE_SIDEBAR:
+      videoDetector.overlayInjector.toggleSidebar();
+      sendResponse({ success: true });
+      break;
+      
+    default:
+      sendResponse({ success: false, error: 'Unknown message type' });
+  }
+  
+  return true; // Keep message channel open for async response
+});
+
 // Global capture shortcut handler - set up immediately
 console.log('NotNot: Setting up global capture shortcut handler immediately');
 
@@ -1841,11 +2005,89 @@ document.addEventListener('notnot-capture-requested', () => {
   }
 });
 
+// Settings cache for performance
+let settingsCache = null;
+let settingsCacheTime = 0;
+const SETTINGS_CACHE_DURATION = 5000; // 5 seconds
+
+async function getSettingsWithCache() {
+  const now = Date.now();
+  if (settingsCache && now - settingsCacheTime < SETTINGS_CACHE_DURATION) {
+    return settingsCache;
+  }
+  
+  return new Promise((resolve) => {
+    chrome.storage.sync.get('notnot_settings', (result) => {
+      settingsCache = result.notnot_settings || {};
+      settingsCacheTime = now;
+      resolve(settingsCache);
+    });
+  });
+}
+
+// Optimized shortcut checker
+function checkShortcut(event, shortcut) {
+  if (!shortcut) return false;
+  
+  const parts = shortcut.toLowerCase().split('+');
+  const expectedKey = parts[parts.length - 1];
+  const eventKey = event.key.toLowerCase();
+  
+  // Quick key check first (most likely to fail)
+  if (eventKey !== expectedKey) return false;
+  
+  // Then check modifiers
+  return (
+    event.ctrlKey === parts.includes('ctrl') &&
+    event.altKey === parts.includes('alt') &&
+    event.shiftKey === parts.includes('shift') &&
+    event.metaKey === (parts.includes('meta') || parts.includes('cmd'))
+  );
+}
+
 document.addEventListener('keydown', async (e) => {
-  // Only check if Alt key is pressed (for Alt+S)
+  // Debug logging removed for production
+  
+  // Only check if Alt key is pressed
   if (!e.altKey && !e.ctrlKey) return;
   
-  // Debug log
+  // Get current settings with caching
+  const settings = await getSettingsWithCache();
+  
+  const defineAreaShortcut = settings.defineAreaShortcut || 'Alt+Shift+A';
+  const isDefineAreaShortcut = checkShortcut(e, defineAreaShortcut);
+  
+  if (isDefineAreaShortcut) {
+    console.log('NotNot Global: Define Area shortcut detected, triggering define area');
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Check if we have an overlay injector instance
+    if (window.videoDetector && window.videoDetector.overlayInjector) {
+      window.videoDetector.overlayInjector.handleDefineArea();
+    } else {
+      console.log('NotNot: Video detector not ready for define area shortcut, trying to initialize...');
+      
+      // Try to find a video element and initialize if needed
+      const video = document.querySelector('video');
+      if (video && !window.videoDetector) {
+        console.log('NotNot: Found video, initializing detector...');
+        videoDetector = new VideoDetector();
+        window.videoDetector = videoDetector;
+        videoDetector.init();
+        
+        // Wait a bit for initialization
+        setTimeout(() => {
+          if (window.videoDetector && window.videoDetector.overlayInjector) {
+            window.videoDetector.overlayInjector.handleDefineArea();
+          }
+        }, 500);
+      }
+    }
+    return;
+  }
+  
+  // Debug log for Alt+S
   if (e.altKey && e.key.toLowerCase() === 's') {
     console.log('NotNot Global: Alt+S detected!');
     console.log('NotNot Global: videoDetector exists?', !!window.videoDetector);

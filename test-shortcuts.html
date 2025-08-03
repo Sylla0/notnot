@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Keyboard Shortcuts</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .test-section {
+      margin: 20px 0;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    input {
+      width: 200px;
+      padding: 8px;
+      font-size: 16px;
+      margin: 10px 0;
+    }
+    .result {
+      margin-top: 10px;
+      padding: 10px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    .status {
+      padding: 5px 10px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-top: 10px;
+    }
+    .success { background: #4ade80; }
+    .error { background: #f87171; }
+    .info { background: #60a5fa; }
+  </style>
+</head>
+<body>
+  <h1>NotNot Keyboard Shortcut Test</h1>
+  
+  <div class="test-section">
+    <h2>Test 1: Shortcut Capture</h2>
+    <p>Click the input field and press a key combination:</p>
+    <input type="text" id="shortcut-input" placeholder="Click and press keys" readonly style="cursor: pointer;">
+    <div id="capture-result" class="result">Waiting for input...</div>
+  </div>
+  
+  <div class="test-section">
+    <h2>Test 2: Chrome Conflicts</h2>
+    <p>Common Chrome shortcuts to avoid:</p>
+    <ul>
+      <li>Alt+D - Focus address bar ❌</li>
+      <li>Alt+Shift+A - No Chrome conflict ✅</li>
+      <li>Alt+S - No Chrome conflict ✅</li>
+      <li>Ctrl+T - New tab ❌</li>
+      <li>Ctrl+W - Close tab ❌</li>
+    </ul>
+  </div>
+  
+  <div class="test-section">
+    <h2>Test 3: Current Settings</h2>
+    <button id="load-settings">Load Current Settings</button>
+    <div id="settings-result" class="result">Click button to load settings...</div>
+  </div>
+
+  <script>
+    // Test shortcut capture functionality
+    const input = document.getElementById('shortcut-input');
+    const result = document.getElementById('capture-result');
+    let isCapturing = false;
+    
+    input.addEventListener('focus', () => {
+      isCapturing = true;
+      input.value = 'Press shortcut keys...';
+      input.style.backgroundColor = '#e0f2fe';
+      result.textContent = 'Listening for keys...';
+    });
+    
+    input.addEventListener('keydown', (e) => {
+      if (isCapturing) {
+        e.preventDefault();
+      }
+    });
+    
+    input.addEventListener('keyup', (e) => {
+      if (!isCapturing) return;
+      
+      e.preventDefault();
+      e.stopPropagation();
+      
+      if (['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) {
+        return;
+      }
+      
+      const parts = [];
+      if (e.ctrlKey) parts.push('Ctrl');
+      if (e.altKey) parts.push('Alt');
+      if (e.shiftKey) parts.push('Shift');
+      if (e.metaKey) parts.push('Cmd');
+      
+      const key = e.key.length === 1 ? e.key.toUpperCase() : e.key;
+      parts.push(key);
+      
+      const shortcut = parts.join('+');
+      
+      if (parts.length < 2) {
+        input.value = 'Please use a modifier key';
+        input.style.backgroundColor = '#fee2e2';
+        result.innerHTML = '<span class="status error">Error: Must include a modifier key (Ctrl, Alt, Shift)</span>';
+        return;
+      }
+      
+      input.value = shortcut;
+      input.style.backgroundColor = '#dcfce7';
+      result.innerHTML = `<span class="status success">Captured: ${shortcut}</span>`;
+      
+      isCapturing = false;
+      input.blur();
+    });
+    
+    input.addEventListener('blur', () => {
+      if (isCapturing && input.value === 'Press shortcut keys...') {
+        input.value = '';
+      }
+      isCapturing = false;
+      input.style.backgroundColor = '';
+    });
+    
+    // Test loading settings
+    document.getElementById('load-settings').addEventListener('click', () => {
+      const settingsDiv = document.getElementById('settings-result');
+      
+      if (typeof chrome !== 'undefined' && chrome.storage) {
+        chrome.storage.sync.get('notnot_settings', (result) => {
+          if (result.notnot_settings) {
+            settingsDiv.innerHTML = `
+              <h4>Current Settings:</h4>
+              <pre>${JSON.stringify(result.notnot_settings, null, 2)}</pre>
+            `;
+          } else {
+            settingsDiv.innerHTML = '<span class="status info">No settings found - using defaults</span>';
+          }
+        });
+      } else {
+        settingsDiv.innerHTML = '<span class="status error">Chrome storage API not available (open in extension context)</span>';
+      }
+    });
+  </script>
+</body>
+</html>

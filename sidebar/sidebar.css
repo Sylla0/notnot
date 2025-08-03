@@ -56,7 +56,7 @@ body {
 }
 
 .btn-icon {
-  width: 32px;
+  width: 40px;
   height: 32px;
   border: 1px solid #e5e7eb;
   background: white;
@@ -150,7 +150,7 @@ body {
 }
 
 .toolbar-btn {
-  width: 32px;
+  width: 40px;
   height: 32px;
   border: 1px solid #e5e7eb;
   background: white;
@@ -250,65 +250,6 @@ body {
   font-size: 11px;
 }
 
-/* Transcript */
-.transcript-controls {
-  padding: 16px;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.btn-primary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btn-primary:hover {
-  background: #2563eb;
-}
-
-.btn-primary.recording {
-  background: #ef4444;
-}
-
-.btn-primary svg {
-  width: 20px;
-  height: 20px;
-}
-
-.transcript-content {
-  padding: 16px;
-}
-
-.transcript-entry {
-  margin-bottom: 16px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.transcript-entry:last-child {
-  border-bottom: none;
-}
-
-.transcript-timestamp {
-  color: #3b82f6;
-  font-weight: 500;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.transcript-text {
-  margin-top: 4px;
-  color: #374151;
-}
 
 /* Status Bar */
 .status-bar {

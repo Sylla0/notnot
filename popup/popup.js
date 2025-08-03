@@ -9,10 +9,9 @@ const CONSTANTS = {
   MESSAGES: {
     VIDEO_DETECTED: 'video_detected',
     CAPTURE_SCREENSHOT: 'capture_screenshot',
+    DEFINE_CAPTURE_AREA: 'define_capture_area',
     TOGGLE_SIDEBAR: 'toggle_sidebar',
-    SAVE_NOTE: 'save_note',
-    START_RECORDING: 'start_recording',
-    STOP_RECORDING: 'stop_recording'
+    SAVE_NOTE: 'save_note'
   }
 };
 
@@ -27,6 +26,9 @@ class NotNotPopup {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     this.currentTab = tab;
 
+    // Initialize dark mode
+    this.initDarkMode();
+
     // Check for video
     this.checkVideoStatus();
 
@@ -35,6 +37,22 @@ class NotNotPopup {
 
     // Load recent notes
     this.loadRecentNotes();
+  }
+
+  initDarkMode() {
+    // Initialize dark mode manager
+    if (window.darkModeManager) {
+      // Update theme toggle button
+      const themeToggle = document.getElementById('theme-toggle');
+      if (themeToggle) {
+        themeToggle.innerHTML = window.darkModeManager.getToggleIcon();
+        
+        themeToggle.addEventListener('click', async () => {
+          const newTheme = await window.darkModeManager.toggleTheme();
+          themeToggle.innerHTML = window.darkModeManager.getToggleIcon();
+        });
+      }
+    }
   }
 
   setupEventListeners() {
@@ -49,11 +67,13 @@ class NotNotPopup {
       this.sendMessageToTab({ type: CONSTANTS.MESSAGES.CAPTURE_SCREENSHOT });
       window.close();
     });
-
-    // Start transcription
-    document.getElementById('start-transcription').addEventListener('click', () => {
-      this.toggleTranscription();
+    
+    // Define capture area
+    document.getElementById('define-capture-area').addEventListener('click', () => {
+      this.sendMessageToTab({ type: CONSTANTS.MESSAGES.DEFINE_CAPTURE_AREA });
+      window.close();
     });
+
 
     // All notes
     document.getElementById('all-notes').addEventListener('click', () => {
@@ -136,7 +156,7 @@ class NotNotPopup {
     // Disable action buttons
     document.getElementById('toggle-sidebar').disabled = true;
     document.getElementById('capture-screenshot').disabled = true;
-    document.getElementById('start-transcription').disabled = true;
+    document.getElementById('define-capture-area').disabled = true;
   }
 
   showVideoStatus(videoInfo) {
@@ -203,31 +223,6 @@ class NotNotPopup {
     });
   }
 
-  toggleTranscription() {
-    const btn = document.getElementById('start-transcription');
-    const isRecording = btn.classList.contains('recording');
-    
-    if (isRecording) {
-      btn.classList.remove('recording');
-      btn.innerHTML = `
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-        </svg>
-        <span>Start Transcription</span>
-      `;
-      this.sendMessageToTab({ type: CONSTANTS.MESSAGES.STOP_RECORDING });
-    } else {
-      btn.classList.add('recording');
-      btn.innerHTML = `
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <rect x="9" y="9" width="6" height="6"></rect>
-        </svg>
-        <span>Stop Transcription</span>
-      `;
-      this.sendMessageToTab({ type: CONSTANTS.MESSAGES.START_RECORDING });
-    }
-  }
 
   sendMessageToTab(message) {
     console.log('Popup: Sending message to tab', message);

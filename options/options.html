@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NotNot - Settings</title>
   <link rel="stylesheet" href="options.css">
+  <link rel="stylesheet" href="../assets/styles/dark-mode.css">
 </head>
 <body>
   <div class="options-container">
@@ -53,6 +54,18 @@
             </div>
           </label>
         </div>
+
+        <div class="setting-group">
+          <label for="theme-select">
+            <strong>Theme</strong>
+            <p>Choose your preferred color theme</p>
+          </label>
+          <select id="theme-select" class="setting-select">
+            <option value="auto">Auto (System)</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </div>
       </section>
 
       <!-- Capture Settings -->
@@ -64,8 +77,17 @@
             <strong>Capture keyboard shortcut</strong>
             <p>Press this key combination to capture screenshots</p>
           </label>
-          <input type="text" id="capture-shortcut" class="setting-input" placeholder="Alt+S" value="Alt+S">
-          <p class="setting-description">Examples: Alt+S, Ctrl+Shift+C, Alt+Shift+X</p>
+          <input type="text" id="capture-shortcut" class="setting-input" placeholder="Alt+S" value="Alt+S" readonly style="cursor: pointer;">
+          <p class="setting-description">Click the input field and press your desired key combination</p>
+        </div>
+        
+        <div class="setting-group">
+          <label for="define-area-shortcut">
+            <strong>Define capture area shortcut</strong>
+            <p>Press this key combination to define/change the capture area</p>
+          </label>
+          <input type="text" id="define-area-shortcut" class="setting-input" placeholder="Alt+Shift+A" value="Alt+Shift+A" readonly style="cursor: pointer;">
+          <p class="setting-description">Click the input field and press your desired key combination</p>
         </div>
         
         <div class="setting-group">
@@ -103,37 +125,6 @@
         </div>
       </section>
 
-      <!-- Transcription Settings -->
-      <section class="settings-section">
-        <h2>Transcription Settings</h2>
-        
-        <div class="setting-group">
-          <label for="transcription-language">
-            <strong>Transcription language</strong>
-            <p>Primary language for speech recognition</p>
-          </label>
-          <select id="transcription-language" class="setting-select">
-            <option value="en-US" selected>English (US)</option>
-            <option value="en-GB">English (UK)</option>
-            <option value="es-ES">Spanish</option>
-            <option value="fr-FR">French</option>
-            <option value="de-DE">German</option>
-            <option value="ja-JP">Japanese</option>
-            <option value="ko-KR">Korean</option>
-            <option value="zh-CN">Chinese (Simplified)</option>
-          </select>
-        </div>
-
-        <div class="setting-group">
-          <label class="setting-label">
-            <input type="checkbox" id="continuous-transcription" checked>
-            <div>
-              <strong>Continuous transcription</strong>
-              <p>Keep transcribing even during silence</p>
-            </div>
-          </label>
-        </div>
-      </section>
 
       <!-- Export Settings -->
       <section class="settings-section">
@@ -195,6 +186,7 @@
     </footer>
   </div>
 
+  <script src="../assets/js/dark-mode.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

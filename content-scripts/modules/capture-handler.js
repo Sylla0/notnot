@@ -58,6 +58,45 @@ export class CaptureHandler {
     });
   }
   
+  async defineArea() {
+    console.log('CaptureHandler: defineArea called');
+    console.log('CaptureHandler: video element:', this.video);
+    console.log('CaptureHandler: video dimensions:', this.video?.videoWidth, 'x', this.video?.videoHeight);
+    
+    return new Promise((resolve, reject) => {
+      try {
+        console.log('CaptureHandler: Creating AreaSelector');
+        const selector = new AreaSelector(this.video, async (area, cancelled) => {
+          console.log('CaptureHandler: AreaSelector callback called', { area, cancelled });
+          
+          if (cancelled) {
+            this.showToast('영역 선택이 취소되었습니다', 'info');
+            resolve(null);
+            return;
+          }
+          
+          if (area) {
+            await this.saveCaptureArea(area);
+            this.showToast('캡처 영역이 설정되었습니다', 'success');
+          } else {
+            // Full screen selected
+            this.resetCaptureArea();
+            this.showToast('전체 화면 캡처로 설정되었습니다', 'success');
+          }
+          
+          resolve(area);
+        });
+        
+        console.log('CaptureHandler: Starting AreaSelector');
+        selector.start();
+        console.log('CaptureHandler: AreaSelector started');
+      } catch (error) {
+        console.error('CaptureHandler: Error in defineArea', error);
+        reject(error);
+      }
+    });
+  }
+  
   async captureArea(area = null) {
     try {
       // Create canvas
@@ -126,7 +165,7 @@ export class CaptureHandler {
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: ${type === 'success' ? '#10b981' : '#ef4444'};
+      background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
       color: white;
       padding: 12px 24px;
       border-radius: 8px;

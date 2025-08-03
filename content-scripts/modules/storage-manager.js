@@ -250,6 +250,7 @@ export class StorageManager {
           autoSave: true,
           showOverlay: true,
           captureShortcut: CONSTANTS.SHORTCUTS.CAPTURE,
+          defineAreaShortcut: CONSTANTS.SHORTCUTS.DEFINE_AREA,
           captureQuality: CONSTANTS.UI.CAPTURE_QUALITY,
           captureFormat: CONSTANTS.UI.CAPTURE_FORMAT,
           exportFormat: 'pdf',

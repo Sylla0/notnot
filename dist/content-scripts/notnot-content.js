@@ -29,7 +29,7 @@ const CONSTANTS = {
   },
   
   UI: {
-    SIDEBAR_WIDTH: '400px',
+    SIDEBAR_WIDTH: '500px',
     OVERLAY_Z_INDEX: 9999,
     CAPTURE_QUALITY: 0.92
   }

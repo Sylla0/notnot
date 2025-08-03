@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NotNot Dark Mode Test</title>
+  <link rel="stylesheet" href="popup/popup.css">
+  <link rel="stylesheet" href="assets/styles/dark-mode.css">
+  <script src="assets/js/dark-mode.js"></script>
+  <style>
+    .test-container {
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .test-section {
+      margin: 20px 0;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--bg-secondary);
+    }
+    .color-test {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 10px 0;
+    }
+    .color-box {
+      width: 100px;
+      padding: 10px;
+      text-align: center;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <div class="popup-header">
+      <h1>Dark Mode Test Page</h1>
+      <div class="header-controls">
+        <button id="theme-toggle" class="theme-toggle-btn" title="Toggle theme">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h2>Text Color Tests</h2>
+      <p>Regular paragraph text (should be visible in both modes)</p>
+      <p class="subtitle">Subtitle text with #374151 color</p>
+      <p class="help-text">Help text with #6b7280 color</p>
+      <p class="muted">Muted text with #9ca3af color</p>
+      <p style="color: #333;">Hardcoded #333 text</p>
+      <p style="color: #111827;">Hardcoded #111827 text</p>
+    </div>
+
+    <div class="test-section">
+      <h2>UI Elements</h2>
+      
+      <div class="action-buttons">
+        <button class="action-btn">Action Button</button>
+        <button class="btn-primary">Primary Button</button>
+        <button class="btn-secondary">Secondary Button</button>
+      </div>
+
+      <div style="margin-top: 20px;">
+        <label for="test-input">Input Label:</label>
+        <input type="text" id="test-input" placeholder="Test input field" class="setting-input">
+      </div>
+
+      <div style="margin-top: 20px;">
+        <select class="setting-select">
+          <option>Select option 1</option>
+          <option>Select option 2</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h2>Note Elements</h2>
+      <div class="note-item">
+        <h3 class="note-item-title">Note Title</h3>
+        <p class="note-item-preview">Note preview text that should be visible in dark mode</p>
+        <div class="note-item-meta">
+          <span class="note-item-platform">YouTube</span>
+          <span class="timestamp">2 hours ago</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h2>Color Palette</h2>
+      <div class="color-test">
+        <div class="color-box" style="background: var(--bg-primary); color: var(--text-primary);">
+          bg-primary
+        </div>
+        <div class="color-box" style="background: var(--bg-secondary); color: var(--text-primary);">
+          bg-secondary
+        </div>
+        <div class="color-box" style="background: var(--bg-tertiary); color: var(--text-primary);">
+          bg-tertiary
+        </div>
+        <div class="color-box" style="background: var(--accent-primary); color: white;">
+          accent-primary
+        </div>
+        <div class="color-box" style="background: var(--text-primary); color: var(--bg-primary);">
+          text-primary
+        </div>
+        <div class="color-box" style="background: var(--text-secondary); color: var(--bg-primary);">
+          text-secondary
+        </div>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h2>Links and Status</h2>
+      <p><a href="#">This is a regular link</a></p>
+      <p class="success">Success message text</p>
+      <p class="warning">Warning message text</p>
+      <p class="danger">Error message text</p>
+    </div>
+  </div>
+
+  <script>
+    // Initialize dark mode
+    const darkModeManager = new DarkModeManager();
+    darkModeManager.init();
+
+    // Theme toggle
+    document.getElementById('theme-toggle').addEventListener('click', async () => {
+      await darkModeManager.toggleTheme();
+    });
+  </script>
+</body>
+</html>

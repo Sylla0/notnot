@@ -13,6 +13,7 @@ export class OverlayInjector {
     this.storage = new StorageManager();
     this.captureButtonLongPressTimer = null;
     this.isLongPress = false;
+    this.settings = null;
     
     // Event cleanup tracking
     this.eventCleanup = [];
@@ -20,15 +21,32 @@ export class OverlayInjector {
 
   async init() {
     console.log('OverlayInjector: Initializing...');
+    console.log('OverlayInjector: storage exists?', !!this.storage);
     
     // Initialize storage
-    await this.storage.init();
+    try {
+      await this.storage.init();
+      console.log('OverlayInjector: Storage initialized successfully');
+      console.log('OverlayInjector: storage.db exists?', !!this.storage.db);
+    } catch (error) {
+      console.error('OverlayInjector: Failed to initialize storage:', error);
+      throw error;
+    }
+    
+    // Load settings
+    this.settings = await this.storage.getSettings();
     
     // Initialize capture handler
     this.captureHandler = new CaptureHandler(this.video, this.storage);
     
     // Create overlay
     this.createOverlay();
+    
+    // Setup keyboard shortcuts
+    this.setupKeyboardShortcuts();
+    
+    // Listen for settings changes
+    this.setupSettingsListener();
     
     // Load sidebar module dynamically when needed
     this.sidebarLoaded = false;
@@ -244,6 +262,100 @@ export class OverlayInjector {
     
     this.sidebar.toggle();
   }
+  
+  setupKeyboardShortcuts() {
+    const handleKeyDown = (e) => {
+      const captureShortcut = this.settings?.captureShortcut || CONSTANTS.SHORTCUTS.CAPTURE;
+      const defineAreaShortcut = this.settings?.defineAreaShortcut || CONSTANTS.SHORTCUTS.DEFINE_AREA;
+      
+      // Debug logging
+      if (e.altKey && (e.key.toLowerCase() === 'a' || e.key.toLowerCase() === 's')) {
+        console.log('OverlayInjector: Key pressed:', e.key, 'Alt:', e.altKey, 'Shift:', e.shiftKey);
+        console.log('OverlayInjector: Define Area Shortcut:', defineAreaShortcut);
+        console.log('OverlayInjector: Capture Shortcut:', captureShortcut);
+        console.log('OverlayInjector: Current settings:', this.settings);
+      }
+      
+      // Check if either shortcut matches
+      const isCaptureShortcut = this.checkShortcut(e, captureShortcut);
+      const isDefineAreaShortcut = this.checkShortcut(e, defineAreaShortcut);
+      
+      // For capture shortcut, check if we're in an input field (but not for define area)
+      if (isCaptureShortcut) {
+        const isInInput = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.contentEditable === 'true';
+        if (isInInput) {
+          return; // Don't capture in input fields
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('OverlayInjector: Triggering capture');
+        this.handleCapture();
+      } else if (isDefineAreaShortcut) {
+        // Define area should work everywhere, including in editors
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('OverlayInjector: Triggering define area');
+        this.handleDefineArea();
+      }
+    };
+    
+    // Add keyboard listener at document level with capture phase
+    const keydownCleanup = utils.addEventListener(document, 'keydown', handleKeyDown, true);
+    this.eventCleanup.push(keydownCleanup);
+    
+    // Also add to window for better coverage
+    const windowKeydownCleanup = utils.addEventListener(window, 'keydown', handleKeyDown, true);
+    this.eventCleanup.push(windowKeydownCleanup);
+    
+    console.log('OverlayInjector: Keyboard shortcuts set up with shortcuts:', {
+      capture: this.settings?.captureShortcut || CONSTANTS.SHORTCUTS.CAPTURE,
+      defineArea: this.settings?.defineAreaShortcut || CONSTANTS.SHORTCUTS.DEFINE_AREA
+    });
+  }
+  
+  checkShortcut(event, shortcut) {
+    if (!shortcut) return false;
+    
+    const parts = shortcut.toLowerCase().split('+');
+    const key = parts[parts.length - 1];
+    
+    const modifiers = {
+      ctrl: parts.includes('ctrl'),
+      alt: parts.includes('alt'),
+      shift: parts.includes('shift'),
+      meta: parts.includes('meta') || parts.includes('cmd')
+    };
+    
+    const eventKey = event.key.toLowerCase();
+    
+    return (
+      event.ctrlKey === modifiers.ctrl &&
+      event.altKey === modifiers.alt &&
+      event.shiftKey === modifiers.shift &&
+      event.metaKey === modifiers.meta &&
+      eventKey === key
+    );
+  }
+  
+  async handleDefineArea() {
+    console.log('OverlayInjector: Handling define area');
+    console.log('OverlayInjector: captureHandler exists?', !!this.captureHandler);
+    console.log('OverlayInjector: video element exists?', !!this.video);
+    
+    if (!this.captureHandler) {
+      console.error('OverlayInjector: captureHandler is not initialized');
+      return;
+    }
+    
+    try {
+      console.log('OverlayInjector: Calling captureHandler.defineArea()');
+      await this.captureHandler.defineArea();
+      console.log('OverlayInjector: defineArea completed');
+    } catch (error) {
+      console.error('OverlayInjector: Define area failed', error);
+      this.captureHandler.showToast('영역 설정 실패', 'error');
+    }
+  }
 
   cleanup() {
     console.log('OverlayInjector: Cleaning up...');
@@ -266,5 +378,20 @@ export class OverlayInjector {
     // Remove all event listeners
     this.eventCleanup.forEach(cleanup => cleanup());
     this.eventCleanup = [];
+  }
+  
+  // Update settings when changed
+  async updateSettings() {
+    this.settings = await this.storage.getSettings();
+  }
+  
+  setupSettingsListener() {
+    // Listen for changes to settings
+    chrome.storage.onChanged.addListener((changes, namespace) => {
+      if (namespace === 'sync' && changes[CONSTANTS.STORAGE_KEYS.SETTINGS]) {
+        console.log('OverlayInjector: Settings changed, updating...');
+        this.updateSettings();
+      }
+    });
   }
 }

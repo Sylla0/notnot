@@ -8,9 +8,8 @@ class NotNotOptions {
       captureQuality: 0.92,
       captureFormat: 'jpeg',
       captureShortcut: 'Alt+S',
+      defineAreaShortcut: 'Alt+Shift+A',
       rememberCaptureArea: true,
-      transcriptionLanguage: 'en-US',
-      continuousTranscription: true,
       exportFormat: 'markdown',
       includeTimestamps: true
     };
@@ -22,6 +21,24 @@ class NotNotOptions {
     await this.loadSettings();
     this.setupEventListeners();
     this.updateUI();
+    this.initDarkMode();
+  }
+
+  initDarkMode() {
+    // Initialize theme selector
+    const themeSelect = document.getElementById('theme-select');
+    if (themeSelect && window.darkModeManager) {
+      // Set current theme
+      const currentTheme = window.darkModeManager.getTheme();
+      themeSelect.value = currentTheme;
+      
+      // Handle theme changes
+      themeSelect.addEventListener('change', async (e) => {
+        const newTheme = e.target.value;
+        window.darkModeManager.applyTheme(newTheme);
+        await window.darkModeManager.saveTheme(newTheme);
+      });
+    }
   }
 
   async loadSettings() {
@@ -71,24 +88,16 @@ class NotNotOptions {
     });
     
     // Capture shortcut
-    document.getElementById('capture-shortcut').addEventListener('input', (e) => {
-      this.settings.captureShortcut = e.target.value;
-    });
+    this.setupShortcutCapture('capture-shortcut', 'captureShortcut');
+    
+    // Define area shortcut
+    this.setupShortcutCapture('define-area-shortcut', 'defineAreaShortcut');
     
     // Remember capture area
     document.getElementById('remember-capture-area').addEventListener('change', (e) => {
       this.settings.rememberCaptureArea = e.target.checked;
     });
 
-    // Transcription language
-    document.getElementById('transcription-language').addEventListener('change', (e) => {
-      this.settings.transcriptionLanguage = e.target.value;
-    });
-
-    // Continuous transcription
-    document.getElementById('continuous-transcription').addEventListener('change', (e) => {
-      this.settings.continuousTranscription = e.target.checked;
-    });
 
     // Export format
     document.getElementById('export-format').addEventListener('change', (e) => {
@@ -127,18 +136,17 @@ class NotNotOptions {
     document.getElementById('auto-save').checked = this.settings.autoSave;
     document.getElementById('show-overlay').checked = this.settings.showOverlay;
     document.getElementById('auto-detect').checked = this.settings.autoDetect;
-    document.getElementById('continuous-transcription').checked = this.settings.continuousTranscription;
     document.getElementById('include-timestamps').checked = this.settings.includeTimestamps;
     document.getElementById('remember-capture-area').checked = this.settings.rememberCaptureArea;
 
     // Update selects
     document.getElementById('capture-quality').value = this.settings.captureQuality;
     document.getElementById('capture-format').value = this.settings.captureFormat;
-    document.getElementById('transcription-language').value = this.settings.transcriptionLanguage;
     document.getElementById('export-format').value = this.settings.exportFormat;
     
     // Update inputs
     document.getElementById('capture-shortcut').value = this.settings.captureShortcut;
+    document.getElementById('define-area-shortcut').value = this.settings.defineAreaShortcut || 'Alt+Shift+A';
   }
 
   showSaveStatus() {
@@ -204,9 +212,8 @@ class NotNotOptions {
       captureQuality: 0.92,
       captureFormat: 'jpeg',
       captureShortcut: 'Alt+S',
+      defineAreaShortcut: 'Alt+Shift+A',
       rememberCaptureArea: true,
-      transcriptionLanguage: 'en-US',
-      continuousTranscription: true,
       exportFormat: 'markdown',
       includeTimestamps: true
     };
@@ -214,6 +221,86 @@ class NotNotOptions {
     this.updateUI();
     
     alert('All data has been cleared. The extension has been reset to default settings.');
+  }
+  
+  setupShortcutCapture(inputId, settingKey) {
+    const input = document.getElementById(inputId);
+    let isCapturing = false;
+    
+    // Prevent normal typing
+    input.addEventListener('keydown', (e) => {
+      if (isCapturing) {
+        e.preventDefault();
+      }
+    });
+    
+    // Start capturing on focus
+    input.addEventListener('focus', () => {
+      isCapturing = true;
+      input.value = 'Press shortcut keys...';
+      input.style.backgroundColor = '#e0f2fe';
+    });
+    
+    // Capture the shortcut
+    input.addEventListener('keyup', (e) => {
+      if (!isCapturing) return;
+      
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Ignore modifier keys alone
+      if (['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) {
+        return;
+      }
+      
+      // Build shortcut string
+      const parts = [];
+      if (e.ctrlKey) parts.push('Ctrl');
+      if (e.altKey) parts.push('Alt');
+      if (e.shiftKey) parts.push('Shift');
+      if (e.metaKey) parts.push('Cmd');
+      
+      // Add the actual key
+      const key = e.key.length === 1 ? e.key.toUpperCase() : e.key;
+      parts.push(key);
+      
+      const shortcut = parts.join('+');
+      
+      // Validate shortcut (must have at least one modifier)
+      if (parts.length < 2) {
+        input.value = 'Please use a modifier key (Ctrl, Alt, Shift)';
+        input.style.backgroundColor = '#fee2e2';
+        return;
+      }
+      
+      // Set the shortcut
+      input.value = shortcut;
+      input.style.backgroundColor = '#dcfce7';
+      this.settings[settingKey] = shortcut;
+      
+      // End capture
+      isCapturing = false;
+      input.blur();
+    });
+    
+    // Cancel capturing on blur
+    input.addEventListener('blur', () => {
+      if (isCapturing && input.value === 'Press shortcut keys...') {
+        input.value = this.settings[settingKey];
+      }
+      isCapturing = false;
+      input.style.backgroundColor = '';
+    });
+    
+    // Cancel on Escape
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isCapturing) {
+        e.preventDefault();
+        input.value = this.settings[settingKey];
+        isCapturing = false;
+        input.blur();
+      }
+    });
   }
 
   openDatabase() {

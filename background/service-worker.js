@@ -9,17 +9,15 @@ const CONSTANTS = {
   MESSAGES: {
     VIDEO_DETECTED: 'video_detected',
     CAPTURE_SCREENSHOT: 'capture_screenshot',
+    DEFINE_CAPTURE_AREA: 'define_capture_area',
     TOGGLE_SIDEBAR: 'toggle_sidebar',
-    SAVE_NOTE: 'save_note',
-    START_RECORDING: 'start_recording',
-    STOP_RECORDING: 'stop_recording'
+    SAVE_NOTE: 'save_note'
   }
 };
 
 class NotNotBackground {
   constructor() {
     this.activeTabId = null;
-    this.isRecording = false;
     this.setupListeners();
   }
 
@@ -29,12 +27,6 @@ class NotNotBackground {
       switch (request.type) {
         case CONSTANTS.MESSAGES.VIDEO_DETECTED:
           this.handleVideoDetected(sender.tab, request.data);
-          break;
-        case CONSTANTS.MESSAGES.START_RECORDING:
-          this.startRecording(sender.tab.id);
-          break;
-        case CONSTANTS.MESSAGES.STOP_RECORDING:
-          this.stopRecording();
           break;
         case CONSTANTS.MESSAGES.SAVE_NOTE:
           this.saveNote(request.data);
@@ -81,28 +73,6 @@ class NotNotBackground {
     });
   }
 
-  async startRecording(tabId) {
-    this.isRecording = true;
-    
-    // Note: In a real implementation, you would:
-    // 1. Use chrome.tabCapture API to capture audio
-    // 2. Send audio to Web Speech API or external service
-    // 3. Stream transcription results back to content script
-    
-    // For MVP, we'll use a simplified approach
-    chrome.tabs.sendMessage(tabId, {
-      type: 'RECORDING_STARTED'
-    });
-  }
-
-  stopRecording() {
-    this.isRecording = false;
-    
-    // Stop any ongoing recording processes
-    chrome.tabs.sendMessage(this.activeTabId, {
-      type: 'RECORDING_STOPPED'
-    });
-  }
 
   toggleSidebar(tabId) {
     chrome.tabs.sendMessage(tabId, {

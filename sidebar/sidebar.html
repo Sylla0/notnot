@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NotNot - Notes</title>
   <link rel="stylesheet" href="sidebar.css">
+  <link rel="stylesheet" href="../assets/styles/dark-mode.css">
 </head>
 <body>
   <div class="sidebar-container">
@@ -35,7 +36,6 @@
     <div class="tabs">
       <button class="tab active" data-tab="notes">Notes</button>
       <button class="tab" data-tab="captures">Captures</button>
-      <button class="tab" data-tab="transcript">Transcript</button>
     </div>
 
     <!-- Content Area -->
@@ -84,21 +84,6 @@
         </div>
       </div>
 
-      <!-- Transcript Tab -->
-      <div id="transcript-tab" class="tab-content">
-        <div class="transcript-controls">
-          <button class="btn-primary" id="toggle-transcription">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-            </svg>
-            Start Transcription
-          </button>
-        </div>
-        <div class="transcript-content" id="transcript-content">
-          <!-- Transcript entries will be inserted here -->
-        </div>
-      </div>
     </div>
 
     <!-- Status Bar -->
@@ -108,6 +93,7 @@
     </div>
   </div>
 
+  <script src="../assets/js/dark-mode.js"></script>
   <script src="sidebar.js"></script>
 </body>
 </html>
